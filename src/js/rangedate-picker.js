@@ -1,5 +1,6 @@
 import fecha from 'fecha'
 
+const label = 'placeholder'
 const defaultConfig = {}
 const defaultI18n = 'ID'
 const availableMonths = {
@@ -123,6 +124,10 @@ export default {
       type: Object,
       default: () => defaultConfig
     },
+    placeholder: {
+      type: String,
+      default: () => label
+    },
     i18n: {
       type: String,
       default: defaultI18n
@@ -208,7 +213,7 @@ export default {
       return Object.assign({}, defaultStyle, this.style)
     },
     startMonthDay: function () {
-      return new Date(Date.UTC(this.activeYearStart, this.activeMonthStart, 1)).getDay()
+      return new Date(Date.UTC(this.activeYearStart, this.activeMonthStart)).getDay()
     },
     startNextMonthDay: function () {
       return new Date(Date.UTC(this.activeYearStart, this.startNextActiveMonth, 1)).getDay()
@@ -252,6 +257,17 @@ export default {
       this.showMonth = !this.showMonth
       return
     },
+
+    showResult: function () {
+      debugger;
+      if (this.dateRange.start) {
+        return `${this.getDateString(this.dateRange.start)} - ${this.getDateString(this.dateRange.end)}`
+      }
+      else {
+        return this.placeholder;
+      }
+
+    },
     getDateString: function (date, format = this.format) {
       if (!date) {
         return null
@@ -289,7 +305,7 @@ export default {
     },
     selectFirstItem(r, i) {
       const result = this.getDayIndexInMonth(r, i, this.startMonthDay)
-      this.dateRange = Object.assign({}, this.dateRange, this.getNewDateRange(result, this.activeMonthStart,
+      this.dateRange = Object.assign({}, this.dateRange, this.getNewDateRange(result + 2, this.activeMonthStart,
         this.activeYearStart))
       if (this.dateRange.start && this.dateRange.end) {
         this.presetActive = ''
@@ -300,14 +316,14 @@ export default {
     },
     selectSecondItem(r, i) {
       const result = this.getDayIndexInMonth(r, i, this.startNextMonthDay)
-      this.dateRange = Object.assign({}, this.dateRange, this.getNewDateRange(result, this.startNextActiveMonth,
+      this.dateRange = Object.assign({}, this.dateRange, this.getNewDateRange(result + 2, this.startNextActiveMonth,
         this.activeYearEnd))
       if (this.dateRange.start && this.dateRange.end) {
         this.presetActive = ''
       }
     },
     isDateSelected(r, i, key, startMonthDay, endMonthDate) {
-      const result = this.getDayIndexInMonth(r, i, startMonthDay)
+      const result = this.getDayIndexInMonth(r, i + 2, startMonthDay)
       if (result < 1 || result > endMonthDate) return false
 
       let currDate = null
@@ -320,7 +336,7 @@ export default {
         (this.dateRange.end && this.dateRange.end.getTime() === currDate.getTime())
     },
     isDateInRange(r, i, key, startMonthDay, endMonthDate) {
-      const result = this.getDayIndexInMonth(r, i, startMonthDay)
+      const result = this.getDayIndexInMonth(r, i + 2, startMonthDay)
       if (result < 2 || result > endMonthDate) return false
 
       let currDate = null
@@ -346,11 +362,11 @@ export default {
     goNextMonth() {
       const nextMonth = new Date(Date.UTC(this.activeYearEnd, this.startNextActiveMonth, 1))
       const correctMonth = this.startNextActiveMonth === 11 ? 0 : nextMonth.getMonth() + 1;
-      const correctYear =  this.startNextActiveMonth === 11? nextMonth.getFullYear() + 1 : nextMonth.getFullYear() ;
-      
+      const correctYear = this.startNextActiveMonth === 11 ? nextMonth.getFullYear() + 1 : nextMonth.getFullYear();
+
       this.activeMonthStart = correctMonth;
       this.activeYearStart = correctYear;
-      this.activeYearEnd =  correctYear
+      this.activeYearEnd = correctYear
 
     },
     updatePreset(item) {
